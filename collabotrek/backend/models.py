@@ -45,7 +45,7 @@ class Trip(models.Model):
 class Trip_Invite(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='trip_invites')
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE, related_name='invited_users')
-    departure_city = models.CharField(max_length=50)
+    departure_city = models.CharField(max_length=50, null=True, blank=True)
 
 class Flight(models.Model):
     id = models.AutoField(primary_key=True)
@@ -58,7 +58,7 @@ class Flight(models.Model):
     price = models.CharField("Flight Price", max_length=24)
     layover_id = models.ManyToManyField(
         "self", symmetrical=False, blank=True, related_name="layovers")
-    trip = models.ForeignKey(Trip, on_delete=models.CASCADE)
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE, null=True, blank=True)
     votes = models.IntegerField(default=0)
 
     def layover_list(self):
@@ -110,6 +110,7 @@ class Activity(models.Model):
     name = models.CharField("Activity Name", max_length=100)
     address = models.CharField("Activity Address", max_length=75, null=True)
     price = models.CharField("Activity Price", max_length=24)
+    date = models.DateField(blank=True, null=True, default="1900-01-01")
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE)
     votes = models.IntegerField(default=0)
 
@@ -119,6 +120,7 @@ class Activity(models.Model):
             "name": self.name,
             "address": self.address,
             "price": self.price,
+            "date": self.date,
             "comments": comment_list(Activity, self.id),
             "votes": self.votes
         }

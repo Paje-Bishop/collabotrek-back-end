@@ -1,9 +1,11 @@
 from django.urls import path
 from . import views
 
+
 urlpatterns = [
     path('members/', views.members, name='members'),
-    path('trips/<int:trip_id>', views.trips, name='trips'),
+    path('login/', views.login, name='login'),
+    path('trips/<int:trip_id>/', views.trips, name='trips'),
     path('<str:obj_type>/<int:obj_id>/invitations/<int:del_id>/', views.invitations, name='invitations'),
     path('trips/<int:trip_id>/flights/<int:flight_id>/', views.flights, name='flights'),
     # path('flights/<int:flight_id>/)', views.flight_detail, name='flights_detail'),

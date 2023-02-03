@@ -1,11 +1,15 @@
 from django.shortcuts import render
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from backend.models import Trip, Member, Flight, Hotel, Activity, Trip_Invite, Comment
+from rest_framework import status, permissions
 
 
 @api_view(['GET', 'POST', 'PATCH'])
+@permission_classes([permissions.AllowAny])
 def members(request):
+    # permission_classes = (permissions.AllowAny,)
+
     if request.method == 'POST':
         new_user_data = request.data
         new_user = Member(
@@ -16,18 +20,23 @@ def members(request):
             email=new_user_data['email']
         )
         new_user.save()
-        return Response({"message": "Got some data!", "data": request.data}, status=201)
-    if request.method == 'GET':
-        all_members = Member.objects.all()
-        member_list = []
-        for member in all_members:
-            new_data = Member.mem_dict(member)
-            member_list.append(new_data)
-        return Response(member_list)
-    return Response({"message": "Hello, world!"})
+        return Response(request.data, status=201)
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def login(request):
+    if request.method == 'POST':
+        requested_member = Member.objects.filter(
+            email=request.data['email'], password=request.data['password'])[0]
+        if requested_member:
+            memberData = Member.mem_dict(requested_member)
+            return Response(memberData)
+        else:
+            return Response({"message": "Error occurred. This user does not exist."}, 404)
 
 
 @api_view(['GET', 'POST', 'DELETE'])
+@permission_classes([permissions.AllowAny])
 def trips(request, trip_id):
     if request.method == 'POST':
         new_data = request.data
@@ -37,7 +46,12 @@ def trips(request, trip_id):
             host=Member.objects.filter(id=host_id)[0]
         )
         new_trip.save()
-        return Response({"message": "Got some data!", "data": request.data}, status=201)
+        new_invite = Trip_Invite(
+            member=Member.objects.filter(id=host_id)[0],
+            trip=new_trip
+        )
+        new_invite.save()
+        return Response(request.data, status=201)
     if request.method == 'DELETE':
         instance = Trip.objects.filter(id=trip_id)
         instance.delete()
@@ -45,6 +59,7 @@ def trips(request, trip_id):
 
 
 @api_view(['GET', 'POST', 'DELETE'])
+@permission_classes([permissions.AllowAny])
 def invitations(request, obj_type, obj_id, del_id=''):
     if request.method == 'POST':
         new_invite = Trip_Invite(
@@ -55,7 +70,7 @@ def invitations(request, obj_type, obj_id, del_id=''):
         new_invite.save()
         return Response({"message": "You did it!!"}, status=201)
     if request.method == 'GET':
-        if obj_type=='trip':
+        if obj_type == 'trip':
             invitees = Trip.objects.filter(id=obj_id)[
                 0].invited_users.all()
             invitee_list = []
@@ -65,7 +80,7 @@ def invitations(request, obj_type, obj_id, del_id=''):
                 new_data["departure_city"] = member_invite.departure_city
                 invitee_list.append(new_data)
             return Response(invitee_list)
-        if obj_type=='member':
+        if obj_type == 'member':
             invited_trips = Member.objects.filter(id=obj_id)[
                 0].trip_invites.all()
             trips_list = []
@@ -81,24 +96,25 @@ def invitations(request, obj_type, obj_id, del_id=''):
     if request.method == 'DELETE':
         if obj_type == 'member':
             del_trip = Trip.objects.filter(id=del_id)[0]
-            invited_trip = Member.objects.filter(id=obj_id)[0].trip_invites.filter(trip=del_trip)
+            invited_trip = Member.objects.filter(
+                id=obj_id)[0].trip_invites.filter(trip=del_trip)
             invited_trip.delete()
             return Response({"Message": "Nice one!"})
 
 
-
 @api_view(['POST', 'DELETE'])
+@permission_classes([permissions.AllowAny])
 def comments(request, obj_type, obj_id, comment_id=''):
     if request.method == 'POST':
         new_comment = Comment(
             flight=Flight.objects.filter(id=obj_id)[
-                0] if obj_type=='flight' else None,
+                0] if obj_type == 'flight' else None,
             hotel=Hotel.objects.filter(id=obj_id)[
-                0] if obj_type=='hotel' else None,
+                0] if obj_type == 'hotel' else None,
             activity=Activity.objects.filter(id=obj_id)[
-                0] if obj_type=='activity' else None,
+                0] if obj_type == 'activity' else None,
             trip=Trip.objects.filter(id=obj_id)[
-                0] if obj_type=='trip' else None,
+                0] if obj_type == 'trip' else None,
             author=Member.objects.filter(id=request.data['author'])[0],
             message=request.data['message'],
             parent_comment=Comment.objects.filter(id=request.data['parent_comment'])[
@@ -113,6 +129,7 @@ def comments(request, obj_type, obj_id, comment_id=''):
 
 
 @api_view(['GET', 'POST', 'PATCH', 'DELETE'])
+@permission_classes([permissions.AllowAny])
 def flights(request, flight_id='', trip_id=''):
     if request.method == 'POST':
         new_flight = Flight(
@@ -124,7 +141,7 @@ def flights(request, flight_id='', trip_id=''):
             arrive_time=request.data['arrive_time'],
             price=request.data['price'],
             votes=0,
-            trip=Trip.objects.filter(id=request.data['trip'])[0]
+            trip=Trip.objects.filter(id=trip_id)[0]
         )
         new_flight.save()
         if request.data["layover_id"]:
@@ -154,10 +171,9 @@ def flights(request, flight_id='', trip_id=''):
         flight.delete()
         return Response({"Message": "Nice one!"})
 
-    
-
 
 @api_view(['GET', 'POST', 'PATCH', 'DELETE'])
+@permission_classes([permissions.AllowAny])
 def hotels(request, trip_id='', hotel_id=''):
     if request.method == 'POST':
         new_hotel = Hotel(
@@ -192,8 +208,8 @@ def hotels(request, trip_id='', hotel_id=''):
         return Response({"Message": "Nice one!"})
 
 
-
 @api_view(['GET', 'POST', 'PATCH', 'DELETE'])
+@permission_classes([permissions.AllowAny])
 def activities(request, trip_id='', activity_id=''):
     if request.method == 'POST':
         new_activity = Activity(

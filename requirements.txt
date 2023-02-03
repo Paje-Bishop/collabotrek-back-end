@@ -9,3 +9,12 @@ djangorestframework==3.14.0
 pytz==2022.7.1
 psycopg==3.1.8
 psycopg2==2.9.5
+
+.newTripItem {
+    background-color:;
+    opacity: 0.8;
+    background: repeating-linear-gradient( 
+        45deg, #444cf7, #444cf7 5px, #e5e5f7 5px, #e5e5f7 25px 
+        );
+    background-color: darkkhaki;
+}
