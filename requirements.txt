@@ -1,20 +1,18 @@
+asgiref==3.6.0
+autopep8==2.0.1
 backports.zoneinfo==0.2.1
 Django==4.1.5
-asgiref==3.6.0
+django-cors-headers==3.13.0
 django-environ==0.9.0
-psycopg2==2.9.4
-sqlparse==0.4.3
-django-cors-headers==3.13.0 
-djangorestframework==3.14.0 
-pytz==2022.7.1
+djangorestframework==3.14.0
+djangorestframework-jwt==1.11.0
+djangorestframework-simplejwt==5.2.2
+gunicorn==20.1.0
 psycopg==3.1.8
 psycopg2==2.9.5
-
-.newTripItem {
-    background-color:;
-    opacity: 0.8;
-    background: repeating-linear-gradient( 
-        45deg, #444cf7, #444cf7 5px, #e5e5f7 5px, #e5e5f7 25px 
-        );
-    background-color: darkkhaki;
-}
+pycodestyle==2.10.0
+PyJWT==1.7.1
+pytz==2022.7.1
+sqlparse==0.4.3
+tomli==2.0.1
+typing-extensions==4.4.0
